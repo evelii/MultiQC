@@ -8,6 +8,9 @@ cache: pip
 matrix:
   fast_finish: true
 # commands to install dependencies
+before_install:
+  # If python version is < 3, then don't run BamQC module
+  - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then sed -i '/bamqc/d' setup.py docs/README.md multiqc/utils/config_defaults.yaml; fi
 install:
   - python setup.py install
   - git clone https://github.com/ewels/MultiQC_TestData.git test_data
