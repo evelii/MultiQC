@@ -128,7 +128,7 @@ class MultiqcModule(BaseMultiqcModule):
                 'cpswitch': False,
                 'tt_percentages': False,
                 'yDecimals': True,
-                'tt_decimals': 14
+                'tt_decimals': 2 
         }
 
         bdata = dict()
@@ -257,12 +257,12 @@ class MultiqcModule(BaseMultiqcModule):
     def insert_mean_plot(self):
 #       Bar plots showing sample names and insert mean 
         pconfig = {
-                'id': 'bamqc_insert_mean',
+                'id': 'bamqc_insert_mean_plot',
                 'title': 'BamQC: Insert Mean',
                 'cpswitch': False,
                 'tt_percentages': False,
                 'yDecimals': True,
-                'tt_decimals': 11
+                'tt_decimals': 1
         }
 
         bdata = dict()
