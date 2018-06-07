@@ -22,7 +22,7 @@ class MultiqcModule(BaseMultiqcModule):
 
         # Initialise the parent object
         super(MultiqcModule, self).__init__(name='BamQC', anchor='bamqc', 
-        href="https://github.com/s-andrews/BamQC", 
+        href="https://github.com/oicr-gsi/BamQC", 
         info="is an application for analysing BAM files containing mapped data and generating a QC report.")
 
         # FInd and load any BamQC json files
