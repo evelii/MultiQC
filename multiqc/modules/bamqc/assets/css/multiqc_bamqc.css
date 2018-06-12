@@ -1,0 +1,44 @@
+/* CSS for the BamQC MultiQC Module */
+
+/* BamQC statuses popovers */
+.bamqc_passfail_progress .progess-bar {
+  cursor: pointer;
+}
+
+.mqc-section-bamqc .popover .popover-content {
+  font-size: 11px;
+  max-height: 300px;
+  white-space: nowrap;
+  overflow: auto;
+}
+
+.popover-success .popover-title {
+  background-color: #dff0d8;
+  color: #3c763d;
+}
+
+.popover-danger .popover-title {
+  background-color: #f2dede;
+  color: #a94442;
+}
+
+.bamqc-popover-intro {
+  margin: 5px 5px 0;
+  padding: 3px 5px;
+  border: 1px dashed #ccc;
+  border-radius: 5px;
+  font-size: 10px;
+  color: #999;
+  background-color: #fafafa;
+}
+
+.bamqc-popover-intro a {
+  color: #999;
+  text-decoration: underline;
+}
+
+.bamqc_passfail_progress {
+  width: 100px;
+  display: inline-block;
+  margin: 0 0 -2px 20px;
+}
