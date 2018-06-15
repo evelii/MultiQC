@@ -83,8 +83,25 @@ def make_table (dt):
         data_attr = 'data-dmax="{}" data-dmin="{}" data-namespace="{}" {}' \
             .format(header['dmax'], header['dmin'], header['namespace'], shared_key)
 
-        cell_contents = '<span class="mqc_table_tooltip" title="{}: {}">{}</span>' \
-            .format(header['namespace'], header['description'], header['title'])
+        if header['title'] == 'Run Name':
+
+            # Add enough space to show the complete infomation
+            cell_contents = '<span class="mqc_table_tooltip" title="{}: {}">{}</span> \
+                             <span style="display:inline-block; width:140px;"></span>' \
+                .format(header['namespace'], header['description'], header['title'])
+        
+        elif header['title'] == 'Index':
+
+            # Add enough space to show the complete infomation
+            cell_contents = '<span class="mqc_table_tooltip" title="{}: {}">{}</span> \
+                             <span style="display:inline-block; width:30px;"></span>' \
+                .format(header['namespace'], header['description'], header['title'])
+
+        else:
+
+            cell_contents = '<span class="mqc_table_tooltip" title="{}: {}">{}</span>' \
+                .format(header['namespace'], header['description'], header['title'])
+
 
         t_headers[rid] = '<th id="header_{rid}" class="{rid} {h}" {da}>{c}</th>' \
             .format(rid=rid, h=hide, da=data_attr, c=cell_contents)
@@ -126,6 +143,7 @@ def make_table (dt):
         for (s_name, samp) in dt.data[idx].items():
             if k in samp:
                 val = samp[k]
+
                 kname = '{}_{}'.format(header['namespace'], rid)
                 dt.raw_vals[s_name][kname] = val
 
@@ -135,7 +153,8 @@ def make_table (dt):
                 try:
                     dmin = header['dmin']
                     dmax = header['dmax']
-                    percentage = ((float(val) - dmin) / (dmax - dmin)) * 100
+                    # slightly reduce the percentage of colors to add some small gap between values
+                    percentage = (((float(val) - dmin) / (dmax - dmin)) * 100) - 2 
                     percentage = min(percentage, 100)
                     percentage = max(percentage, 0)
                 except (ZeroDivisionError,ValueError):

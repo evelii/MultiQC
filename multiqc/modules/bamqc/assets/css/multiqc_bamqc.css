@@ -12,14 +12,14 @@
   overflow: auto;
 }
 
-.popover-success .popover-title {
-  background-color: #dff0d8;
-  color: #3c763d;
+.popover-info .popover-title {
+  background-color: #c9eaf2;
+  color: #1d69ba;
 }
 
-.popover-danger .popover-title {
-  background-color: #f2dede;
-  color: #a94442;
+.popover-warning .popover-title {
+  background-color: #f9f3e3;
+  color: #9b8520;
 }
 
 .bamqc-popover-intro {
@@ -41,4 +41,17 @@
   width: 100px;
   display: inline-block;
   margin: 0 0 -2px 20px;
+}
+
+.bamqc_alert_warning{
+  color: #8a6d3b;
+  background-color: #fcf8e3;
+  border-color: #faebcc;
+  width: 450px;
+  display: inline-block;
+  margin-left: 25px;
+  margin-bottom: -2px;
+  height: 25px;
+  padding: 6px 50px;
+  font-size: 14px;
 }

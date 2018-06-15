@@ -6,15 +6,26 @@ $(function () {
         var pid = '#bamqc_'+k;
         var total = 0;
         var v = { 'pass': 0, 'fail': 0 };
+        var add_warning = false;
         $.each(vals, function(s_name, status){
-            total += 1;
-            v[status] += 1;
+            if (s_name != 'warning') {
+                total += 1;
+                v[status] += 1;
+            } else if (s_name == 'warning' && status) {
+                add_warning = true;
+            }
         });
         var p_bar = '<div class="progress bamqc_passfail_progress"> \
-            <div class="progress-bar progress-bar-success" style="width: '+(v['pass']/total)*100+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
-            <div class="progress-bar progress-bar-danger" style="width: '+(v['fail']/total)*100+'%" title="'+v['fail']+'&nbsp;/&nbsp;'+total+' samples are more than two standard deviations away from the mean">'+v['fail']+'</div> \
+            <div class="progress-bar progress-bar-info" style="width: '+(v['pass']/total)*100+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
+            <div class="progress-bar progress-bar-warning" style="width: '+(v['fail']/total)*100+'%" title="'+v['fail']+'&nbsp;/&nbsp;'+total+' samples are more than two standard deviations away from the mean">'+v['fail']+'</div> \
         </div>';
         $(pid).append(p_bar);
+        if (add_warning) {
+            var p_warning = '<div class="alert bamqc_alert_warning"> \
+            <strong>Warning: </strong><span style="display:inline-block; width:23px;"></span>( mean - 2 standard deviations ) < 0. \
+            </div>';
+            $(pid).append(p_warning);
+        }
     });
 
     // Create popovers on click
@@ -25,11 +36,11 @@ $(function () {
         var pid = $(this).closest('h3').attr('id');
         var k = pid.substr(6);
         var vals = bamqc_passfails[k];
-        var passes = $(this).hasClass('progress-bar-success') ? true : false;
-        var fails = $(this).hasClass('progress-bar-danger') ? true : false;
+        var passes = $(this).hasClass('progress-bar-info') ? true : false;
+        var fails = $(this).hasClass('progress-bar-warning') ? true : false;
         var pclass = '';
-        if(passes){ pclass = 'success'; }
-        if(fails){ pclass = 'danger'; }
+        if(passes){ pclass = 'info'; }
+        if(fails){ pclass = 'warning'; }
         var samples = Array();
         $.each(vals, function(s_name, status){
             if(status == 'pass' && passes){ samples.push(s_name); }

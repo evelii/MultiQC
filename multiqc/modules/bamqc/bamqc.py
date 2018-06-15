@@ -10,6 +10,8 @@ log = logging.getLogger(__name__)
 from collections import OrderedDict
 from multiqc import config
 from multiqc.plots import bargraph
+from multiqc.plots import table
+from multiqc.utils import report
 from multiqc.modules.base_module import BaseMultiqcModule
 import os
 import io
@@ -26,14 +28,20 @@ class MultiqcModule(BaseMultiqcModule):
         href="https://github.com/oicr-gsi/BamQC", 
         info="is an application for analysing BAM files containing mapped data and generating a QC report.")
 
-        # FInd and load any BamQC json files
+        # Find and load any BamQC json files
         self.bamqc_data = dict()
+        # Store short sample Names, Run Names and Indices
+        self.sample_name_info = dict() 
+
         for f in self.find_log_files('bamqc'):
             # remove all file extensions
             file_name = f['s_name'].replace(".annotated", "")
             self.parse_bamqc_log(f['f'], file_name, f)
 
         # check reads for each sample and mark any outlier as 'fail'; otherwise, mark it as 'pass'    
+        # bamqc_stats_warning is used to save whether a set of data has (mean - 2 standard deviations) < 0; if so, 
+        # add a warning to the table near the progress bar
+        self.bamqc_stats_warning = dict()
         self.find_outliers()
 
         # Filter to strip out ignored sample names
@@ -51,8 +59,8 @@ class MultiqcModule(BaseMultiqcModule):
         self.css = { 'assets/css/multiqc_bamqc.css' : os.path.join(os.path.dirname(__file__), 'assets', 'css', 'multiqc_bamqc.css') }
         self.js = { 'assets/js/multiqc_bamqc.js' : os.path.join(os.path.dirname(__file__), 'assets', 'js', 'multiqc_bamqc.js') }
 
-        # Basic Stats Table
-#       self.bamqc_general_table()
+        # BamQC Stats Table
+        self.bamqc_general_stats()
 
         # Add the statuses to the intro for multiqc_bamqc.js to pick up
         statuses = dict()
@@ -63,6 +71,9 @@ class MultiqcModule(BaseMultiqcModule):
                             statuses[section][s_name] = status
                     except KeyError:
                             statuses[section] = {s_name: status}
+        for section in statuses.keys():
+            statuses[section]['warning'] = self.bamqc_stats_warning[section]
+
         self.intro += '<script type="text/javascript">bamqc_passfails = {};</script>'.format(json.dumps(statuses))
 
         # Add each Sample Read Plot section in order
@@ -89,7 +100,9 @@ class MultiqcModule(BaseMultiqcModule):
 
         # properties that need to be parsed and analyzed
         property_list = ['reads on target', 'reads per start point', 'total reads', 'paired reads', \
-                        'mapped reads', 'aligned bases', 'soft clip bases', 'insert mean']
+                        'mapped reads', 'aligned bases', 'soft clip bases', 'insert mean', 'target size']
+
+        self.sample_name_info[s_name] = dict()
 
         for s in file_content.split(','):
                 property = s.split(':')[0]
@@ -111,6 +124,26 @@ class MultiqcModule(BaseMultiqcModule):
                                self.bamqc_data[s_name][str(property)] = float(value)
                         else:
                                self.bamqc_data[s_name][str(property)] = int(value)
+
+                elif property == 'library':
+                       
+                        library = s.split(':')[1].replace("\"", "")
+                        self.sample_name_info[s_name]['library'] = library
+
+                elif property == 'run name':
+ 
+                        run_name = s.split(':')[1].replace("\"", "")
+                        self.sample_name_info[s_name]['run name'] = run_name
+
+                elif property == 'barcode':
+
+                        index = s.split(':')[1].replace("\"", "")
+                        self.sample_name_info[s_name]['index'] = index
+
+                elif property == 'group id':
+ 
+                        group_id = s.split(':')[1].replace("\"", "")
+                        self.sample_name_info[s_name]['group id'] = group_id
 
         # check if any required data is missing
         for p in property_list:
@@ -145,9 +178,149 @@ class MultiqcModule(BaseMultiqcModule):
                                    self.bamqc_data[s_name]['statuses'][property] = 'fail'
                         else:
                                    self.bamqc_data[s_name]['statuses'][property] = 'pass'
+                        
+                # Check if (mean - 2 * stdev) < 0; if so, set the value in bamqc_stats_warning to be true
+                n_property = property.lower().replace(' ', '_')
+                self.bamqc_stats_warning[n_property] = (mean - 2 * stdev) < 0
 
                 # reset the list
                 reads = [] 
+
+    def bamqc_general_stats(self):
+        """ Add single-number stats to the bamqc general statistics
+        table at the top of the report but below the general stats table"""
+
+        # Prepare the data
+        
+        # Calculate map %: 
+        # formula = (mapped reads / total reads) * 100
+        # if total reads is 0, treat as 1
+        for s_name in self.bamqc_data.keys():
+                mapped_reads = self.bamqc_data[s_name]['mapped reads']
+                total_reads = self.bamqc_data[s_name]['total reads']
+                if total_reads == 0:
+                        total_reads = 1
+                map_percent = (mapped_reads / total_reads) * 100
+                self.bamqc_data[s_name]['map percent'] = map_percent
+
+        # Calculate on target %:
+        # formula = (reads on target / mapped reads) * 100
+        # if mapped reads is 0, treat as 1
+        for s_name in self.bamqc_data.keys():
+                mapped_reads = self.bamqc_data[s_name]['mapped reads'] or 1
+                reads_on_target = self.bamqc_data[s_name]['reads on target']
+                on_target_percent = (reads_on_target / mapped_reads) * 100
+                self.bamqc_data[s_name]['on target percent'] = on_target_percent
+
+        # Calculate the estimated total coverage
+        # formula = estimated yield / target size
+        # if target size is 0, treat as 1        
+        # formula for the estimated yield = (total aligned bases * on target percentage) / reads per start point
+        # if reads per start point is 0, treat as 1
+        for values in self.bamqc_data.values():
+               target_size = values['target size'] or 1
+               aligned_bases = values['aligned bases']
+               on_target_percent = values['on target percent'] / 100
+               reads_per_start_point = values['reads per start point'] or 1
+               est_yield = (aligned_bases * on_target_percent) / reads_per_start_point
+               coverage = est_yield / target_size
+               values['coverage'] = coverage
+
+        # Manipulate/Shorten Sample names 
+        # Keep the date and the lane number in Sample Name
+        # Move Run Name and Index into separate columns
+        stats_data = dict(self.bamqc_data) # Make a copy of self.bamqc_data to contain new sample names and use it to construct the table
+
+        for s_name in self.bamqc_data.keys():
+                date = self.sample_name_info[s_name]['run name'].split('_')[0]
+                lane_number = s_name.split('_')[13]
+                sample_name = self.sample_name_info[s_name]['library'] + "_" + self.sample_name_info[s_name]['group id'] + "_" + date + "_" + lane_number
+                stats_data[sample_name] = stats_data[s_name]
+                del stats_data[s_name]
+                stats_data[sample_name]['run name'] = self.sample_name_info[s_name]['run name']
+                stats_data[sample_name]['index'] = self.sample_name_info[s_name]['index']
+
+        table_config = {
+                'namespace': 'BamQC',
+                'table_title': 'Aligned Statistics'
+        }
+ 
+        headers = OrderedDict()
+        headers['run name'] = {
+                'title': 'Run Name',
+                'description': 'Run Name',
+                'hidden': True
+        }
+        headers['index'] = {
+                'title': 'Index',
+                'description': 'Barcode/Index',
+                'hidden': True
+        }
+        headers['map percent'] = {
+                'title': 'Map %',
+                'description': 'Map Percent',
+                'scale': 'Blues'
+        }
+        headers['on target percent'] = {
+                'title': '% On Target',
+                'description': 'Percent on Target',
+                'scale': 'Blues'
+        }
+        headers['coverage'] = {
+                'title': 'Coverage',
+                'description': 'Estimated Coverage',
+                'scale': 'Blues'
+        }
+        headers['reads on target'] = {
+                'title': 'On Target',
+                'description': 'Reads on Target',
+                'scale': 'Blues',
+                'format': '{:,.0f}'  # no decimal places
+        }
+        headers['reads per start point'] = {
+                'title': 'Reads/SP',
+                'description': 'Reads per Start Point',
+                'scale': 'Blues',
+                'format': '{:.2f}'   # show two decimal places
+        }
+        headers['total reads'] = {
+                'title': 'Total Rs',
+                'description': 'Total Reads',
+                'scale': 'Blues',
+                'format': '{:,.0f}'
+        }
+        headers['paired reads'] = {
+                'title': 'Paired Rs',
+                'description': 'Paired Reads',
+                'scale': 'Blues',
+                'format': '{:,.0f}'
+        }
+        headers['mapped reads'] = {
+                'title': 'Mapped Rs',
+                'description': 'Mapped Reads',
+                'scale': 'Blues',
+                'format': '{:,.0f}'
+        }
+        headers['aligned bases'] = {
+                'title': 'Aligned Rs',
+                'description': 'Aligned Reads',
+                'scale': 'Blues',
+                'format': '{:,.0f}'
+        }
+        headers['soft clip bases'] = {
+                'title': 'Soft Clip',
+                'description': 'Soft Clip Bases',
+                'scale': 'Blues',
+                'format': '{:,.0f}'
+        } 
+        headers['insert mean'] = {
+                'title': 'Insert Mean',
+                'description': 'Insert Mean',
+                'scale': 'Blues',
+                # one decimal place will be used
+        }
+        table_html = table.plot(stats_data, headers, table_config)
+        report.bamqc_general_stats_html = table_html  # add the table to a report
 
     def reads_on_target_plot(self):
 #       Bar plots showing sample names and values for reads on target
@@ -171,11 +344,11 @@ class MultiqcModule(BaseMultiqcModule):
         cats = OrderedDict()
         cats['reads on target'] = {
                 'name': 'Reads on Target',
-                'color': '#3ea540'  # passed: bars are plotted in green
+                'color': '#55b4d1'  # passed: bars are plotted in blue
         }
         cats['reads on target fail'] = {
                 'name': 'Reads on Target (Outliers)',
-                'color': '#bf3939'  # failed: bars are plotted in red
+                'color': '#ddac39'  # failed: bars are plotted in yellow
         }
 
         self.add_section (
@@ -208,11 +381,11 @@ class MultiqcModule(BaseMultiqcModule):
         cats = OrderedDict()
         cats['reads per start point'] = {
                 'name': 'Reads per Start Point',
-                'color': '#3ea540'  # green
+                'color': '#55b4d1'  # blue
         }
         cats['reads per start point fail'] = {
                 'name': 'Reads per Start Point (Outliers)',
-                'color': '#bf3939'  # red
+                'color': '#ddac39'  # yellow
         }
 
         self.add_section (
@@ -243,11 +416,11 @@ class MultiqcModule(BaseMultiqcModule):
         cats = OrderedDict()
         cats['total reads'] = {
                 'name': 'Total Reads',
-                'color': '#3ea540'   # green
+                'color': '#55b4d1'   # blue
         }
         cats['total reads fail'] = {
                 'name': 'Total Reads (Outliers)',
-                'color': '#bf3939'   # red
+                'color': '#ddac39'   # yellow
         }
 
         self.add_section (
@@ -278,11 +451,11 @@ class MultiqcModule(BaseMultiqcModule):
         cats = OrderedDict()
         cats['paired reads'] = {
                 'name': 'Paired Reads',
-                'color': '#3ea540'   # green
+                'color': '#55b4d1'   # blue
         }
         cats['paired reads fail'] = {
                 'name': 'Paired Reads (Outliers)',
-                'color': '#bf3939'    # red
+                'color': '#ddac39'    # yellow
         }
 
         self.add_section (
@@ -313,11 +486,11 @@ class MultiqcModule(BaseMultiqcModule):
         cats = OrderedDict() 
         cats['mapped reads'] = {
                 'name': 'Mapped Reads',
-                'color': '#3ea540'    # green
+                'color': '#55b4d1'    # blue
         }
         cats['mapped reads fail'] = {
                 'name': 'Mapped Reads (Outliers)',
-                'color': '#bf3939'    # red
+                'color': '#ddac39'    # yellow
         }
 
         self.add_section (
@@ -348,11 +521,11 @@ class MultiqcModule(BaseMultiqcModule):
         cats = OrderedDict()
         cats['aligned bases'] = {
                 'name': 'Aligned Bases',
-                'color': '#3ea540'    # green
+                'color': '#55b4d1'    # blue
         }
         cats['aligned bases fail'] = {
                 'name': 'Aligned Bases (Outliers)',
-                'color': '#bf3939'    # red
+                'color': '#ddac39'    # yellow
         }
 
         self.add_section (
@@ -383,11 +556,11 @@ class MultiqcModule(BaseMultiqcModule):
         cats = OrderedDict()
         cats['soft clip bases'] = {
                 'name': 'Soft Clip Bases',
-                'color': '#3ea540'    # green
+                'color': '#55b4d1'    # blue
         }
         cats['soft clip bases fail'] = {
                 'name': 'Soft Clip Bases (Outliers)',
-                'color': '#bf3939'    # red
+                'color': '#ddac39'    # yellow
         }
 
         self.add_section (
@@ -420,11 +593,11 @@ class MultiqcModule(BaseMultiqcModule):
         cats = OrderedDict()
         cats['insert mean'] = {
                 'name': 'Insert Mean',
-                'color': '#3ea540'   # green
+                'color': '#55b4d1'   # blue
         }
         cats['insert mean fail'] = {
                 'name': 'Insert Mean (Outliers)',
-                'color': '#bf3939'   # red
+                'color': '#ddac39'   # yellow
         }
 
         self.add_section (

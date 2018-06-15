@@ -33,6 +33,7 @@ except NameError:
 general_stats_data = list()
 general_stats_headers = list()
 general_stats_html = ''
+bamqc_general_stats_html = ''
 data_sources = defaultdict(lambda:defaultdict(lambda:defaultdict()))
 plot_data = dict()
 html_ids = list()

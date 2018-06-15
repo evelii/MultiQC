@@ -1,0 +1,13 @@
+{# #######################
+  bamqc_general_stats.html
+##########################
+
+This block generates the BamQC General Statistics table below the general stats table.
+
+#}
+{% if not (report.bamqc_general_stats_html == '') %}
+<div id="bamqc_general_stats" class="mqc-module-section">
+  <h2>Aligned Statistics</h2>
+  {{ report.bamqc_general_stats_html }}
+</div>
+{% endif %}
