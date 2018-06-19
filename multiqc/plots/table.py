@@ -85,17 +85,29 @@ def make_table (dt):
 
         if header['title'] == 'Run Name':
 
-            # Add enough space to show the complete infomation
-            cell_contents = '<span class="mqc_table_tooltip" title="{}: {}">{}</span> \
-                             <span style="display:inline-block; width:140px;"></span>' \
-                .format(header['namespace'], header['description'], header['title'])
-        
-        elif header['title'] == 'Index':
+            # Find the value with the longest length to decide how much space a column should extend
+            values = []
+            for samp in dt.data[idx].values():
+                if k in samp:
+                    values.append(samp[k])
 
             # Add enough space to show the complete infomation
             cell_contents = '<span class="mqc_table_tooltip" title="{}: {}">{}</span> \
-                             <span style="display:inline-block; width:30px;"></span>' \
-                .format(header['namespace'], header['description'], header['title'])
+                             <span style="display:inline-block; width:{}ch;"></span>' \
+                .format(header['namespace'], header['description'], header['title'], len(max(values, key=len)))
+        
+        elif header['title'] == 'Index':
+
+            # Find the value with the longest length to decide how much space a column should extend
+            values = []
+            for samp in dt.data[idx].values():
+                if k in samp:
+                    values.append(samp[k])
+
+            # Add enough space to show the complete infomation
+            cell_contents = '<span class="mqc_table_tooltip" title="{}: {}">{}</span> \
+                             <span style="display:inline-block; width:{}ch;"></span>' \
+                .format(header['namespace'], header['description'], header['title'], len(max(values, key=len)))
 
         else:
 

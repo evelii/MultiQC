@@ -145,6 +145,11 @@ class MultiqcModule(BaseMultiqcModule):
                         group_id = s.split(':')[1].replace("\"", "")
                         self.sample_name_info[s_name]['group id'] = group_id
 
+                elif property == 'lane':
+
+                        lane_number = s.split(':')[1]
+                        self.sample_name_info[s_name]['lane'] = lane_number
+
         # check if any required data is missing
         for p in property_list:
                if not (p in self.bamqc_data[s_name].keys()):
@@ -233,8 +238,11 @@ class MultiqcModule(BaseMultiqcModule):
 
         for s_name in self.bamqc_data.keys():
                 date = self.sample_name_info[s_name]['run name'].split('_')[0]
-                lane_number = s_name.split('_')[13]
-                sample_name = self.sample_name_info[s_name]['library'] + "_" + self.sample_name_info[s_name]['group id'] + "_" + date + "_" + lane_number
+                lane_number = "L" + str(self.sample_name_info[s_name]['lane']).zfill(3)  # prepend zeros on the left to fill width of 3
+                if 'group id' in self.sample_name_info[s_name].keys():
+                        sample_name = self.sample_name_info[s_name]['library'] + "_" + self.sample_name_info[s_name]['group id'] + "_" + date + "_" + lane_number
+                else:
+                        sample_name = self.sample_name_info[s_name]['library'] + "_" + date + "_" + lane_number
                 stats_data[sample_name] = stats_data[s_name]
                 del stats_data[s_name]
                 stats_data[sample_name]['run name'] = self.sample_name_info[s_name]['run name']
