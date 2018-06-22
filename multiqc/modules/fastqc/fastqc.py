@@ -218,32 +218,6 @@ class MultiqcModule(BaseMultiqcModule):
         hide_seq_length = False if max(seq_lengths) - min(seq_lengths) > 10 else True
 
         headers = OrderedDict()
-        headers['percent_duplicates'] = {
-            'title': '% Dups',
-            'description': '% Duplicate Reads',
-            'max': 100,
-            'min': 0,
-            'suffix': '%',
-            'scale': 'RdYlGn-rev'
-        }
-        headers['percent_gc'] = {
-            'title': '% GC',
-            'description': 'Average % GC Content',
-            'max': 100,
-            'min': 0,
-            'suffix': '%',
-            'scale': 'Set1',
-            'format': '{:,.0f}'
-        }
-        headers['avg_sequence_length'] = {
-            'title': 'Length',
-            'description': 'Average Sequence Length (bp)',
-            'min': 0,
-            'suffix': ' bp',
-            'scale': 'RdYlGn',
-            'format': '{:,.0f}',
-            'hidden': hide_seq_length
-        }
         headers['percent_fails'] = {
             'title': '% Failed',
             'description': 'Percentage of modules failed in FastQC report (includes those not plotted here)',
@@ -255,8 +229,8 @@ class MultiqcModule(BaseMultiqcModule):
             'hidden': True
         }
         headers['total_sequences'] = {
-            'title': '{} Seqs'.format(config.read_count_prefix),
-            'description': 'Total Sequences ({})'.format(config.read_count_desc),
+            'title': '{} Reads'.format(config.read_count_prefix),
+            'description': 'Total Reads ({})'.format(config.read_count_desc),
             'min': 0,
             'scale': 'Blues',
             'modify': lambda x: x * config.read_count_multiplier,
