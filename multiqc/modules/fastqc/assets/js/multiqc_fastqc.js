@@ -172,10 +172,31 @@ $(function () {
             total += 1;
             v[status] += 1;
         });
+        var pass_percent = (v['pass']/total)*100;
+        var warn_percent = (v['warn']/total)*100;
+        var fail_percent = (v['fail']/total)*100;
+        var pass_number_of_digits = v['pass'].toString().length;
+        var warn_number_of_digits = v['warn'].toString().length;
+        var fail_number_of_digits = v['fail'].toString().length;
+        var max_percent = Math.max(pass_percent, warn_percent, fail_percent);
+        // Each digit needs around 8px of space
+        if (max_percent == pass_percent) {
+            warn_percent = warn_percent != 0 && warn_percent < warn_number_of_digits * 8 ? warn_number_of_digits * 8 : warn_percent;
+            fail_percent = fail_percent != 0 && fail_percent < fail_number_of_digits * 8 ? fail_number_of_digits * 8 : fail_percent;
+            pass_percent = 100 - warn_percent - fail_percent;
+        } else if (max_percent == warn_percent) {
+            pass_percent = pass_percent != 0 && pass_percent < pass_number_of_digits * 8 ? pass_number_of_digits * 8 : pass_percent;
+            fail_percent = fail_percent != 0 && fail_percent < fail_number_of_digits * 8 ? fail_number_of_digits * 8 : fail_percent;
+            warn_percent = 100 - pass_percent - fail_percent;
+        } else {
+            pass_percent = pass_percent != 0 && pass_percent < pass_number_of_digits * 8 ? pass_number_of_digits * 8 : pass_percent;
+            warn_percent = warn_percent != 0 && warn_percent < warn_number_of_digits * 8 ? warn_number_of_digits * 8 : warn_percent;
+            fail_percent = 100 - pass_percent - warn_percent;
+        }
         var p_bar = '<div class="progress fastqc_passfail_progress"> \
-            <div class="progress-bar progress-bar-success" style="width: '+(v['pass']/total)*100+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
-            <div class="progress-bar progress-bar-warning" style="width: '+(v['warn']/total)*100+'%" title="'+v['warn']+'&nbsp;/&nbsp;'+total+' samples with warnings">'+v['warn']+'</div> \
-            <div class="progress-bar progress-bar-danger" style="width: '+(v['fail']/total)*100+'%" title="'+v['fail']+'&nbsp;/&nbsp;'+total+' samples failed">'+v['fail']+'</div> \
+            <div class="progress-bar progress-bar-success" style="width: '+pass_percent+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
+            <div class="progress-bar progress-bar-warning" style="width: '+warn_percent+'%" title="'+v['warn']+'&nbsp;/&nbsp;'+total+' samples with warnings">'+v['warn']+'</div> \
+            <div class="progress-bar progress-bar-danger" style="width: '+fail_percent+'%" title="'+v['fail']+'&nbsp;/&nbsp;'+total+' samples failed">'+v['fail']+'</div> \
         </div>';
         $(pid).append(p_bar);
     });
