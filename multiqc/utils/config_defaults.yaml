@@ -51,7 +51,10 @@ plots_force_interactive: false
 plots_flat_numseries: 100
 num_datasets_plot_limit: 50
 collapse_tables: true
-max_table_rows: 500
+
+# MultiQC starts using beeswarm plots when a table has 500 rows or more
+max_table_rows: 501
+
 table_columns_visible: {}
 table_columns_placement: {}
 table_cond_formatting_colours:

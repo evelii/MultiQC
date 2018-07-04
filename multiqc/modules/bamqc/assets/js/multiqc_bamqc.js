@@ -15,9 +15,25 @@ $(function () {
                 add_warning = true;
             }
         });
+        var pass_percent = (v['pass']/total)*100;
+        var fail_percent = (v['fail']/total)*100;
+        var pass_number_of_digits = v['pass'].toString().length;
+        var fail_number_of_digits = v['fail'].toString().length;
+        var pass = pass_percent; // variable used to specify the width of a progress-bar-pass 
+        var fail = fail_percent; // vairable used to specify the width of a progress-bar-fail
+        // Each digit needs around 8px of space
+        // Because the width for either samples that are passed or samples that are failed will be their corresponding percentage times the total width,
+        // the total width of a progress bar is 100px, then in order to make all digits visible, a number needs at least (8 * the number of digits it has)% * 100px of space
+        if (pass_percent != 0 && pass_percent < pass_number_of_digits * 8) {
+            pass = pass_number_of_digits * 8;
+            fail = 100 - pass_number_of_digits * 8;
+        } else if (fail_percent != 0 && fail_percent < fail_number_of_digits * 8) {
+            fail = fail_number_of_digits * 8;
+            pass = 100 - fail_number_of_digits * 8;
+        }
         var p_bar = '<div class="progress bamqc_passfail_progress"> \
-            <div class="progress-bar progress-bar-info" style="width: '+(v['pass']/total)*100+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
-            <div class="progress-bar progress-bar-warning" style="width: '+(v['fail']/total)*100+'%" title="'+v['fail']+'&nbsp;/&nbsp;'+total+' samples are more than two standard deviations away from the mean">'+v['fail']+'</div> \
+            <div class="progress-bar progress-bar-info" style="width: '+pass+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
+            <div class="progress-bar progress-bar-warning" style="width: '+fail+'%" title="'+v['fail']+'&nbsp;/&nbsp;'+total+' samples are more than two standard deviations away from the mean">'+v['fail']+'</div> \
         </div>';
         $(pid).append(p_bar);
         if (add_warning) {
