@@ -156,6 +156,8 @@ deeptools/plotFingerprintOutRawCounts:
 deeptools/plotFingerprintOutQualityMetrics:
     contents: 'Sample	AUC	Synthetic AUC	X-intercept	Synthetic X-intercept	Elbow Point	Synthetic Elbow Point'
     num_lines: 1
+fastp:
+    fn: 'fastp.json'
 fastq_screen:
     fn: '*_screen.txt'
 fastqc/data:
@@ -214,6 +216,8 @@ jellyfish:
 kallisto:
     contents: '[quant] finding pseudoalignments for the reads'
     shared: true
+kat:
+    fn: '*.dist_analysis.json'
 leehom:
     contents: 'Adapter dimers/chimeras'
     shared: true

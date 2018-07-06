@@ -5,6 +5,9 @@
 Some of these updates are thanks to the efforts of people who attended the [NASPM](https://twitter.com/NordicGenomics) 2018 MultiQC hackathon session. Thanks to everyone who attended!
 
 #### New Modules:
+* [**fastp**](https://github.com/OpenGene/fastp)
+    * An ultra-fast all-in-one FASTQ preprocessor (QC, adapters, trimming, filtering, splitting...)
+    * Module started by [@florianduclot](https://github.com/florianduclot/) and completed by [@ewels](https://github.com/ewels/)
 * [**Long Ranger**](https://support.10xgenomics.com/genome-exome/software/pipelines/latest/what-is-long-ranger)
     * Works with data from the 10X Genomics Chromium. Performs sample demultiplexing, barcode processing, alignment, quality control, variant calling, phasing, and structural variant calling.
     * Module written by [@remiolsen](https://github.com/remiolsen/)
@@ -35,6 +38,8 @@ Some of these updates are thanks to the efforts of people who attended the [NASP
     * Fixed edge case bug where MultiQC could crash if a sample had zero count coverage with idxstats.
 * **Tophat**
     * Fixed bug where some samples could be given a blank sample name ([@lparsons](https://github.com/lparsons))
+* **VerifyBamID**
+    * Change column header help text for contamination to match percentage output ([@chapmanb](https://github.com/chapmanb))
 
 #### New MultiQC Features:
 * Add `path_filters_exclude` to exclude certain files when running modules multiple times. You could previously only include certain files.
