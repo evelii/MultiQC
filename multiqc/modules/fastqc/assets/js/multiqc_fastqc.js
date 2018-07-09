@@ -196,7 +196,7 @@ $(function () {
             fail = 100 - pass - warn;
         }
         var p_bar = '<div class="progress fastqc_passfail_progress"> \
-            <div class="progress-bar progress-bar-success" style="width: '+pass+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
+            <div class="progress-bar progress-bar-info" style="width: '+pass+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
             <div class="progress-bar progress-bar-warning" style="width: '+warn+'%" title="'+v['warn']+'&nbsp;/&nbsp;'+total+' samples with warnings">'+v['warn']+'</div> \
             <div class="progress-bar progress-bar-danger" style="width: '+fail+'%" title="'+v['fail']+'&nbsp;/&nbsp;'+total+' samples failed">'+v['fail']+'</div> \
         </div>';
@@ -211,7 +211,7 @@ $(function () {
         var pid = $(this).closest('h3').attr('id');
         var k = pid.substr(7);
         var vals = fastqc_passfails[k];
-        var passes = $(this).hasClass('progress-bar-success') ? true : false;
+        var passes = $(this).hasClass('progress-bar-info') ? true : false;
         var warns = $(this).hasClass('progress-bar-warning') ? true : false;
         var fails = $(this).hasClass('progress-bar-danger') ? true : false;
         var pclass = '';
