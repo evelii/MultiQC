@@ -179,26 +179,26 @@ $(function () {
         var warn_number_of_digits = v['warn'].toString().length;
         var fail_number_of_digits = v['fail'].toString().length;
         var max_percent = Math.max(pass_percent, warn_percent, fail_percent);
-        var pass, warn, fail; // variable used to save the width in a progress-bar
+        var pass_width, warn_width, fail_width; // variable used to save the width in a progress-bar
         // Each digit needs around 8px of space
         // The progress bar has a total width of 100px, so spaces allocated for pass, warn or fail will be calculated by their percentage * 100px
         if (max_percent == pass_percent) {
-            warn = warn_percent != 0 && warn_percent < warn_number_of_digits * 8 ? warn_number_of_digits * 8 : warn_percent;
-            fail = fail_percent != 0 && fail_percent < fail_number_of_digits * 8 ? fail_number_of_digits * 8 : fail_percent;
-            pass = 100 - warn - fail;
+            warn_width = calculateWidth(warn_percent, warn_number_of_digits, 100);
+            fail_width = calculateWidth(fail_percent, fail_number_of_digits, 100);
+            pass_width = 100 - warn_width - fail_width;
         } else if (max_percent == warn_percent) {
-            pass = pass_percent != 0 && pass_percent < pass_number_of_digits * 8 ? pass_number_of_digits * 8 : pass_percent;
-            fail = fail_percent != 0 && fail_percent < fail_number_of_digits * 8 ? fail_number_of_digits * 8 : fail_percent;
-            warn = 100 - pass - fail;
+            pass_width = calculateWidth(pass_percent, pass_number_of_digits, 100);
+            fail_width = calculateWidth(fail_percent, fail_number_of_digits, 100);
+            warn_width = 100 - pass_width - fail_width;
         } else {
-            pass = pass_percent != 0 && pass_percent < pass_number_of_digits * 8 ? pass_number_of_digits * 8 : pass_percent;
-            warn = warn_percent != 0 && warn_percent < warn_number_of_digits * 8 ? warn_number_of_digits * 8 : warn_percent;
-            fail = 100 - pass - warn;
+            pass_width = calculateWidth(pass_percent, pass_number_of_digits, 100);
+            warn_width = calculateWidth(warn_percent, warn_number_of_digits, 100);
+            fail_width = 100 - pass_width - warn_width;
         }
         var p_bar = '<div class="progress fastqc_passfail_progress"> \
-            <div class="progress-bar progress-bar-info" style="width: '+pass+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
-            <div class="progress-bar progress-bar-warning" style="width: '+warn+'%" title="'+v['warn']+'&nbsp;/&nbsp;'+total+' samples with warnings">'+v['warn']+'</div> \
-            <div class="progress-bar progress-bar-danger" style="width: '+fail+'%" title="'+v['fail']+'&nbsp;/&nbsp;'+total+' samples failed">'+v['fail']+'</div> \
+            <div class="progress-bar progress-bar-info" style="width: '+pass_width+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
+            <div class="progress-bar progress-bar-warning" style="width: '+warn_width+'%" title="'+v['warn']+'&nbsp;/&nbsp;'+total+' samples with warnings">'+v['warn']+'</div> \
+            <div class="progress-bar progress-bar-danger" style="width: '+fail_width+'%" title="'+v['fail']+'&nbsp;/&nbsp;'+total+' samples failed">'+v['fail']+'</div> \
         </div>';
         $(pid).append(p_bar);
     });
@@ -474,7 +474,7 @@ function plot_single_seqcontent(s_name){
       type: 'line',
       zoomType: 'x'
     },
-    colors: ['#dc0000', '#0000dc', '#00dc00', '#404040'],
+    colors: ['#dc0000', '#0000dc', '#00dc00', '#ff96cd'],
     title: {
       text: s_name,
       x: 30 // fudge to center over plot area rather than whole plot
@@ -526,6 +526,24 @@ function plot_single_seqcontent(s_name){
   });
 }
 
+// Find the correct width for a progress bar to make all digits of a number visible
+function calculateWidth(percentage_result, number_of_digits, total_width) {
+  if (percentage_result == 0) {
+      // if the percentage being calculated is zero
+      // '0' does not need to be shown in a progress bar, so just return the original percentage
+      return percentage_result;
+  }
+  // each digit needs 8px, calculate the total space needed for a number
+  var space_expected = number_of_digits * 8;
+  // calculate the actual space for a number by multiplying the percentage by the total width of a progress bar
+  var space_actual = (percentage_result / 100) * total_width;
+  if (space_actual < space_expected) {
+      // the actual space is not large enough, return the amount of space we expected
+      return space_expected;
+  }
+  // the actual space is large enough, so do not need to expand it
+  return space_actual;
+}
 
 // Find the position of the mouse cursor over the canvas
 // http://stackoverflow.com/questions/6735470/get-pixel-color-from-canvas-on-mouseover
