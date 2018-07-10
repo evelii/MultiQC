@@ -87,7 +87,7 @@ class MultiqcModule(BaseMultiqcModule):
         self.js = { 'assets/js/multiqc_fastqc.js' : os.path.join(os.path.dirname(__file__), 'assets', 'js', 'multiqc_fastqc.js') }
 
         # Colours to be used for plotting lines
-        self.status_colours = { 'pass': '#5cb85c', 'warn': '#f0ad4e', 'fail': '#d9534f', 'default': '#999' }
+        self.status_colours = { 'pass': '#64bdd6', 'warn': '#f0ad4e', 'fail': '#d9534f', 'default': '#999' }
 
         # Add to the general statistics table
         self.fastqc_general_stats()
@@ -318,7 +318,7 @@ class MultiqcModule(BaseMultiqcModule):
             'tt_label': '<b>Base {point.x}</b>: {point.y:.2f}',
             'colors': self.get_status_cols('per_base_sequence_quality'),
             'yPlotBands': [
-                {'from': 28, 'to': 100, 'color': '#c3e6c3'},
+                {'from': 28, 'to': 100, 'color': '#b7daff'},
                 {'from': 20, 'to': 28, 'color': '#e6dcc3'},
                 {'from': 0, 'to': 20, 'color': '#e6c3c3'},
             ]
@@ -367,7 +367,7 @@ class MultiqcModule(BaseMultiqcModule):
             'colors': self.get_status_cols('per_sequence_quality_scores'),
             'tt_label': '<b>Phred {point.x}</b>: {point.y} reads',
             'xPlotBands': [
-                {'from': 28, 'to': 100, 'color': '#c3e6c3'},
+                {'from': 28, 'to': 100, 'color': '#b7daff'},
                 {'from': 20, 'to': 28, 'color': '#e6dcc3'},
                 {'from': 0, 'to': 20, 'color': '#e6c3c3'},
             ]
@@ -617,7 +617,7 @@ class MultiqcModule(BaseMultiqcModule):
             'yPlotBands': [
                 {'from': 20, 'to': 100, 'color': '#e6c3c3'},
                 {'from': 5, 'to': 20, 'color': '#e6dcc3'},
-                {'from': 0, 'to': 5, 'color': '#c3e6c3'},
+                {'from': 0, 'to': 5, 'color': '#b7daff'},
             ]
         }
 
@@ -870,7 +870,7 @@ class MultiqcModule(BaseMultiqcModule):
             'yPlotBands': [
                 {'from': 20, 'to': 100, 'color': '#e6c3c3'},
                 {'from': 5, 'to': 20, 'color': '#e6dcc3'},
-                {'from': 0, 'to': 5, 'color': '#c3e6c3'},
+                {'from': 0, 'to': 5, 'color': '#b7daff'},
             ],
         }
 

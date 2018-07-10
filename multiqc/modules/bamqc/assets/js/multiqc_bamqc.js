@@ -82,6 +82,13 @@ $(function () {
         }).popover('show');
     });
 
+    // dismiss a popover by clicking outside of it
+    $('html').on('click', function(e) {
+        if(!$(e.target).is('.progress-bar') && $('.popover').has(e.target).length == 0) {
+            $('.mqc-section-bamqc .bamqc_passfail_progress .progress-bar').popover('hide');
+        }
+    });
+
     // Listener for Status higlight click
     $('.mqc-section-bamqc .bamqc_passfail_progress').on('click', '.bamqc-status-highlight', function(e){
         e.preventDefault();

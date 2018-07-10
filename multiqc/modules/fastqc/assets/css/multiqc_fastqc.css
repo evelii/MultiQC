@@ -11,8 +11,8 @@
   overflow: auto;
 }
 .popover-success .popover-title {
-  background-color: #dff0d8;
-  color: #3c763d;
+  background-color: #c9eaf2;
+  color: #1d69ba;
 }
 .popover-warning .popover-title {
   background-color: #fcf8e3;
@@ -116,4 +116,4 @@
 #fastqc_seq_heatmap_key_t { border-bottom: 1px solid red; }
 #fastqc_seq_heatmap_key_c { border-bottom: 1px solid blue; }
 #fastqc_seq_heatmap_key_a { border-bottom: 1px solid green; }
-#fastqc_seq_heatmap_key_g { border-bottom: 1px solid black; }
+#fastqc_seq_heatmap_key_g { border-bottom: 1px solid pink; }

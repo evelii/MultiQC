@@ -172,10 +172,33 @@ $(function () {
             total += 1;
             v[status] += 1;
         });
+        var pass_percent = (v['pass']/total)*100;
+        var warn_percent = (v['warn']/total)*100;
+        var fail_percent = (v['fail']/total)*100;
+        var pass_number_of_digits = v['pass'].toString().length;
+        var warn_number_of_digits = v['warn'].toString().length;
+        var fail_number_of_digits = v['fail'].toString().length;
+        var max_percent = Math.max(pass_percent, warn_percent, fail_percent);
+        var pass_width, warn_width, fail_width; // variable used to save the width in a progress-bar
+        // Each digit needs around 8px of space
+        // The progress bar has a total width of 100px, so spaces allocated for pass, warn or fail will be calculated by their percentage * 100px
+        if (max_percent == pass_percent) {
+            warn_width = calculateWidth(warn_percent, warn_number_of_digits, 100);
+            fail_width = calculateWidth(fail_percent, fail_number_of_digits, 100);
+            pass_width = 100 - warn_width - fail_width;
+        } else if (max_percent == warn_percent) {
+            pass_width = calculateWidth(pass_percent, pass_number_of_digits, 100);
+            fail_width = calculateWidth(fail_percent, fail_number_of_digits, 100);
+            warn_width = 100 - pass_width - fail_width;
+        } else {
+            pass_width = calculateWidth(pass_percent, pass_number_of_digits, 100);
+            warn_width = calculateWidth(warn_percent, warn_number_of_digits, 100);
+            fail_width = 100 - pass_width - warn_width;
+        }
         var p_bar = '<div class="progress fastqc_passfail_progress"> \
-            <div class="progress-bar progress-bar-success" style="width: '+(v['pass']/total)*100+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
-            <div class="progress-bar progress-bar-warning" style="width: '+(v['warn']/total)*100+'%" title="'+v['warn']+'&nbsp;/&nbsp;'+total+' samples with warnings">'+v['warn']+'</div> \
-            <div class="progress-bar progress-bar-danger" style="width: '+(v['fail']/total)*100+'%" title="'+v['fail']+'&nbsp;/&nbsp;'+total+' samples failed">'+v['fail']+'</div> \
+            <div class="progress-bar progress-bar-info" style="width: '+pass_width+'%" title="'+v['pass']+'&nbsp;/&nbsp;'+total+' samples passed">'+v['pass']+'</div> \
+            <div class="progress-bar progress-bar-warning" style="width: '+warn_width+'%" title="'+v['warn']+'&nbsp;/&nbsp;'+total+' samples with warnings">'+v['warn']+'</div> \
+            <div class="progress-bar progress-bar-danger" style="width: '+fail_width+'%" title="'+v['fail']+'&nbsp;/&nbsp;'+total+' samples failed">'+v['fail']+'</div> \
         </div>';
         $(pid).append(p_bar);
     });
@@ -188,7 +211,7 @@ $(function () {
         var pid = $(this).closest('h3').attr('id');
         var k = pid.substr(7);
         var vals = fastqc_passfails[k];
-        var passes = $(this).hasClass('progress-bar-success') ? true : false;
+        var passes = $(this).hasClass('progress-bar-info') ? true : false;
         var warns = $(this).hasClass('progress-bar-warning') ? true : false;
         var fails = $(this).hasClass('progress-bar-danger') ? true : false;
         var pclass = '';
@@ -219,6 +242,13 @@ $(function () {
             </div>'
         }).popover('show');
     });
+
+    // dismiss a popover by clicking outside of it
+     $('html').on('click', function(e) {
+         if(!$(e.target).is('.progress-bar') && $('.popover').has(e.target).length == 0) {
+             $('.mqc-section-fastqc .fastqc_passfail_progress .progress-bar').popover('hide');
+         }
+     });
 
     // Listener for Status higlight click
     $('.mqc-section-fastqc .fastqc_passfail_progress').on('click', '.fastqc-status-highlight', function(e){
@@ -444,7 +474,7 @@ function plot_single_seqcontent(s_name){
       type: 'line',
       zoomType: 'x'
     },
-    colors: ['#dc0000', '#0000dc', '#00dc00', '#404040'],
+    colors: ['#dc0000', '#0000dc', '#00dc00', '#ff96cd'],
     title: {
       text: s_name,
       x: 30 // fudge to center over plot area rather than whole plot
@@ -496,6 +526,24 @@ function plot_single_seqcontent(s_name){
   });
 }
 
+// Find the correct width for a progress bar to make all digits of a number visible
+function calculateWidth(percentage_result, number_of_digits, total_width) {
+  if (percentage_result == 0) {
+      // if the percentage being calculated is zero
+      // '0' does not need to be shown in a progress bar, so just return the original percentage
+      return percentage_result;
+  }
+  // each digit needs 8px, calculate the total space needed for a number
+  var space_expected = number_of_digits * 8;
+  // calculate the actual space for a number by multiplying the percentage by the total width of a progress bar
+  var space_actual = (percentage_result / 100) * total_width;
+  if (space_actual < space_expected) {
+      // the actual space is not large enough, return the amount of space we expected
+      return space_expected;
+  }
+  // the actual space is large enough, so do not need to expand it
+  return space_actual;
+}
 
 // Find the position of the mouse cursor over the canvas
 // http://stackoverflow.com/questions/6735470/get-pixel-color-from-canvas-on-mouseover
