@@ -30,6 +30,9 @@ Some of these updates are thanks to the efforts of people who attended the [NASP
 * **Picard**
     * New submodule to handle `ValidateSamFile` reports ([@cpavanrun](https://github.com/cpavanrun))
     * WGSMetrics now add the mean and standard-deviation coverage to the general stats table (hidden) ([@cpavanrun](https://github.com/cpavanrun))
+* **Preseq**
+    * New config option to plot preseq plots with unique old coverage on the y axis instead of read count
+    * Code refactoring by [@vladsaveliev](https://github.com/vladsaveliev)
 * **QUAST**
     * Null values (`-`) in reports now handled properly. Bargraphs always shown despite varying thresholds. ([@vladsaveliev](https://github.com/vladsaveliev))
 * **RNA-SeQC**
@@ -42,6 +45,7 @@ Some of these updates are thanks to the efforts of people who attended the [NASP
     * Change column header help text for contamination to match percentage output ([@chapmanb](https://github.com/chapmanb))
 
 #### New MultiQC Features:
+* New config option `remove_sections` to skip specific report sections from modules
 * Add `path_filters_exclude` to exclude certain files when running modules multiple times. You could previously only include certain files.
 * New `exclude_*` keys for file search patterns
     * Have a subset of patterns to exclude otherwise detected files with, by filename or contents
@@ -60,6 +64,8 @@ Some of these updates are thanks to the efforts of people who attended the [NASP
 * Modules running multiple times now have multiple sets of columns in the General Statistics table again, instead of overwriting one another.
 * Prevent tables from clobbering sorted row orders.
 * Fix linegraph and scatter plots data conversion (sporadically the incorrect `ymax` was used to drop data points) ([@cpavanrun](https://github.com/cpavanrun))
+* Adjusted multiple file search patterns to make them more specific
+    * Prevents the wrong module from accidentally slurping up output from a different tool. By [@cpavanrun](https://github.com/cpavanrun) (see [PR #727](https://github.com/ewels/MultiQC/pull/727))
 
 
 ## [MultiQC v1.5](https://github.com/ewels/MultiQC/releases/tag/v1.5) - 2018-03-15
