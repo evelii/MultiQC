@@ -83,7 +83,12 @@ def make_table (dt):
         data_attr = 'data-dmax="{}" data-dmin="{}" data-namespace="{}" {}' \
             .format(header['dmax'], header['dmin'], header['namespace'], shared_key)
 
-        if header['title'] == 'Run Name':
+        # the width of a column is decided by the length of the header
+        # a certain amount of padding will be added if len(header) < the longest value in a column
+        padding = 0
+
+        # text values
+        if header['title'] == 'Run Name' or header['title'] == 'Index':
 
             # Find the value with the longest length to decide how much space a column should extend
             values = []
@@ -91,28 +96,46 @@ def make_table (dt):
                 if k in samp:
                     values.append(samp[k])
 
-            # Add enough space to show the complete infomation
+            if (len(max(values, key=len))-len(header['title']) > 0):
+                padding = len(max(values, key=len))-len(header['title'])
+
+            # Add enough space to show the complete information
             cell_contents = '<span class="mqc_table_tooltip" title="{}: {}">{}</span> \
                              <span style="display:inline-block; width:{}ch;"></span>' \
-                .format(header['namespace'], header['description'], header['title'], len(max(values, key=len)))
+                .format(header['namespace'], header['description'], header['title'], padding)
         
-        elif header['title'] == 'Index':
-
-            # Find the value with the longest length to decide how much space a column should extend
-            values = []
-            for samp in dt.data[idx].values():
-                if k in samp:
-                    values.append(samp[k])
-
-            # Add enough space to show the complete infomation
-            cell_contents = '<span class="mqc_table_tooltip" title="{}: {}">{}</span> \
-                             <span style="display:inline-block; width:{}ch;"></span>' \
-                .format(header['namespace'], header['description'], header['title'], len(max(values, key=len)))
-
+        # numeric values
         else:
 
-            cell_contents = '<span class="mqc_table_tooltip" title="{}: {}">{}</span>' \
-                .format(header['namespace'], header['description'], header['title'])
+            # Find the value with the longest length to decide how much space a column should extend
+            values = []
+            for samp in dt.data[idx].values():
+                if k in samp:
+                    val = samp[k]
+
+                    # Apply the custom configuration on the decimal numbers
+                    if 'modify' in header and callable(header['modify']):
+                        val = header['modify'](val)
+                    try:
+                        valstring = str(header['format'].format(val))
+                    except ValueError:
+                        try:
+                            valstring = str(header['format'].format(float(val)))
+                        except ValueError:
+                            valstring = str(val)
+                    except:
+                        valstring = str(val)
+
+                    values.append(valstring.replace(",", ""))
+           
+            max_len = len(max(values, key=len)) + len(max(values, key=len)) / 3 # since a space will be added between every set of three digits
+            if ((max_len-len(header['title'])) > 0):
+                padding = max_len-len(header['title'])
+
+            # Add enough space to show the complete information
+            cell_contents = '<span class="mqc_table_tooltip" title="{}: {}">{}</span> \
+                             <span style="display:inline-block; width:{}ch;"></span>' \
+                .format(header['namespace'], header['description'], header['title'], padding)
 
 
         t_headers[rid] = '<th id="header_{rid}" class="{rid} {h}" {da}>{c}</th>' \
