@@ -154,7 +154,7 @@ $(function () {
 
   // Make HighCharts divs height-draggable
   // http://jsfiddle.net/Lkwb86c8/
-  $('.hc-plot:not(.no-handle)').each(function(){
+  $('.hc-plot:not(.no-handle, .hc-bar-plot)').each(function(){
     if(!$(this).parent().hasClass('hc-plot-wrapper')){
       $(this).wrap('<div class="hc-plot-wrapper"></div>');
     }
@@ -546,7 +546,7 @@ function plot_stacked_bar_graph(target, ds){
   Highcharts.chart(target, {
     chart: {
       type: 'bar',
-      zoomType: 'x'
+      zoomType: 'x' 
     },
     title: {
       text: config['title'],
@@ -554,9 +554,13 @@ function plot_stacked_bar_graph(target, ds){
     xAxis: {
       categories: cats,
       min: 0,
+      max: 15,
       title: {
         text: config['xlab']
       },
+      scrollbar: {
+        enabled: true
+      }
     },
     yAxis: {
       title: {
@@ -580,12 +584,12 @@ function plot_stacked_bar_graph(target, ds){
       series: {
         stacking: config['stacking'],
         groupPadding: 0.02,
-        borderWidth: config['borderWidth']
-      },
-      cursor: config['cursor'],
-      point: {
-        events: {
-          click: config['click_func']
+        borderWidth: config['borderWidth'],
+        cursor: config['cursor'],
+        point: {
+          events: {
+            click: config['click_func']
+          }
         }
       }
     },
@@ -613,7 +617,7 @@ function plot_stacked_bar_graph(target, ds){
       shared: true,
       useHTML: true
     },
-    series: data
+    series: data 
   });
 }
 
