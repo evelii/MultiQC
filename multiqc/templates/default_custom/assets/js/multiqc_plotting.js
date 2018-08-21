@@ -154,7 +154,7 @@ $(function () {
 
   // Make HighCharts divs height-draggable
   // http://jsfiddle.net/Lkwb86c8/
-  $('.hc-plot:not(.no-handle, .hc-bar-plot)').each(function(){
+  $('.hc-plot:not(.no-handle)').each(function(){
     if(!$(this).parent().hasClass('hc-plot-wrapper')){
       $(this).wrap('<div class="hc-plot-wrapper"></div>');
     }
@@ -542,6 +542,12 @@ function plot_stacked_bar_graph(target, ds){
     }
   }
 
+  var bar_num = 25;
+  if (data[0].data.length < 25) {
+    // for some reason, multiqc adds 1 to this number automatically, that's why we need to have minus 1 here
+    bar_num = data[0].data.length-1;
+  }
+
   // Make the highcharts plot
   Highcharts.chart(target, {
     chart: {
@@ -554,7 +560,7 @@ function plot_stacked_bar_graph(target, ds){
     xAxis: {
       categories: cats,
       min: 0,
-      max: 15,
+      max: bar_num,
       title: {
         text: config['xlab']
       },
