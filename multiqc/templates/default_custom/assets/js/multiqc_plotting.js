@@ -154,7 +154,7 @@ $(function () {
 
   // Make HighCharts divs height-draggable
   // http://jsfiddle.net/Lkwb86c8/
-  $('.hc-plot:not(.no-handle)').each(function(){
+  $('.hc-plot:not(.no-handle, .hc-bar-plot)').each(function(){
     if(!$(this).parent().hasClass('hc-plot-wrapper')){
       $(this).wrap('<div class="hc-plot-wrapper"></div>');
     }
@@ -549,7 +549,7 @@ function plot_stacked_bar_graph(target, ds){
   }
 
   // Make the highcharts plot
-  Highcharts.chart(target, {
+  var chart = Highcharts.chart(target, {
     chart: {
       type: 'bar',
       zoomType: 'x' 
@@ -624,6 +624,46 @@ function plot_stacked_bar_graph(target, ds){
       useHTML: true
     },
     series: data 
+  });
+  // Make HighCharts divs height-draggable
+  // http://jsfiddle.net/Lkwb86c8/
+  $('.hc-plot:not(.no-handle)').each(function(){
+    if(!$(this).parent().hasClass('hc-plot-wrapper')){
+      $(this).wrap('<div class="hc-plot-wrapper"></div>');
+    }
+    if(!$(this).siblings().hasClass('hc-plot-handle')){
+      $(this).after('<div class="hc-plot-handle"><span></span><span></span><span></span></div>');
+    }
+    $(this).css({ height: 'auto', top: 0, bottom: '10px', position: 'absolute' });
+  });
+  $('.hc-plot-handle').on('mousedown', function(e){
+    var wrapper = $(this).parent();
+    var handle = $(this);
+    var startHeight = wrapper.height();
+    var pY = e.pageY;
+    $(document).on('mouseup', function(e){
+      // Clear listeners now that we've let go
+      $(document).off('mousemove');
+      $(document).off('mouseup');
+      // Fire off a custom jQuery event for other javascript chunks to tie into
+      // Bind to the plot div, which should have a custom ID
+      $(wrapper.parent().find('.hc-plot, .beeswarm-plot')).trigger('mqc_plotresize');
+    });
+    $(document).on('mousemove', function(me){
+      wrapper.css('height', startHeight + (me.pageY - pY));
+      var container_height = parseFloat(wrapper.css("height"));
+      // each bar has a width of 20px
+      var number = container_height / 20;
+      chart.xAxis[0].update({
+        max: number
+      });
+    });
+  });
+  // Trigger HighCharts reflow when a plot is resized
+  $('.hc-plot, .beeswarm-plot').on('mqc_plotresize', function(e){
+    if($(this).highcharts()) {
+      $(this).highcharts().reflow();
+    }
   });
 }
 
